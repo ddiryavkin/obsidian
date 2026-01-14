@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian Mastery | Интерактивный Гид</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+        
+        :root {
+            --obsidian-dark: #1e1e1e;
+            --obsidian-purple: #7c3aed;
+            --obsidian-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+
+        .code-font { font-family: 'Fira Code', monospace; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link.active {
+            color: var(--obsidian-purple);
+            font-weight: 600;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--obsidian-purple);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: 0 auto;
+        }
+
+        .step-active {
+            border-color: var(--obsidian-purple);
+            background-color: #f5f3ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Анимация пульсации для активных элементов */
+        .pulse-purple {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Навигация -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center text-white font-bold">O</div>
+                    <span class="text-xl font-bold tracking-tight">Obsidian<span class="text-violet-600">Mastery</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="showSection('home')" class="nav-link active" id="btn-home">Обзор</button>
+                    <button onclick="showSection('method')" class="nav-link" id="btn-method">Методологии</button>
+                    <button onclick="showSection('dataview')" class="nav-link" id="btn-dataview">Базы данных</button>
+                    <button onclick="showSection('rag')" class="nav-link" id="btn-rag">AI & RAG</button>
+                </div>
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="p-2 text-gray-600">☰</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Мобильное меню -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-200 p-4 space-y-2">
+        <button onclick="showSection('home'); toggleMobileMenu()" class="block w-full text-left p-2 hover:bg-violet-50 rounded">Обзор</button>
+        <button onclick="showSection('method'); toggleMobileMenu()" class="block w-full text-left p-2 hover:bg-violet-50 rounded">Методологии</button>
+        <button onclick="showSection('dataview'); toggleMobileMenu()" class="block w-full text-left p-2 hover:bg-violet-50 rounded">Базы данных</button>
+        <button onclick="showSection('rag'); toggleMobileMenu()" class="block w-full text-left p-2 hover:bg-violet-50 rounded">AI & RAG</button>
+    </div>
+
+    <!-- Основной контент -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- СЕКЦИЯ: ГЛАВНАЯ -->
+        <section id="sec-home" class="space-y-12">
+            <div class="text-center space-y-4">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
+                    Ваш <span class="text-violet-600">Второй Мозг</span> в Obsidian
+                </h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Превратите хаос из заметок в структурированную базу знаний. Интерактивный гайд по системе, которая реально работает.
+                </p>
+            </div>
+
+            <!-- Интерактивный Граф -->
+            <div class="glass-card rounded-3xl p-8 shadow-xl overflow-hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Визуализация знаний</h2>
+                        <p class="text-gray-500">Симуляция связей между вашими идеями</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="randomizeGraph()" class="px-4 py-2 bg-violet-100 text-violet-700 rounded-full font-semibold hover:bg-violet-200 transition-all text-sm">Обновить связи</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="graphCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-violet-500">
+                    <h3 class="font-bold text-lg mb-2">Локальность</h3>
+                    <p class="text-gray-600 text-sm">Все файлы хранятся у вас на устройстве в формате Markdown. Никакой привязки к облаку.</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-blue-500">
+                    <h3 class="font-bold text-lg mb-2">Связи (WikiLinks)</h3>
+                    <p class="text-gray-600 text-sm">Создавайте нейронную сеть из заметок. Одна идея ведет к другой через [[двойные скобки]].</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-green-500">
+                    <h3 class="font-bold text-lg mb-2">Open Source Дух</h3>
+                    <p class="text-gray-600 text-sm">Тысячи плагинов позволяют превратить Obsidian в Kanban-доску, календарь или базу данных.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ: МЕТОДОЛОГИИ -->
+        <section id="sec-method" class="hidden space-y-10">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-bold mb-4">Методологии Организации</h2>
+                <p class="text-gray-600">Как не превратить Obsidian в "кладбище заметок"? Используйте проверенные фреймворки.</p>
+            </div>
+
+            <!-- Zettelkasten -->
+            <div class="space-y-6">
+                <h3 class="text-xl font-bold flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-sm">01</span>
+                    Zettelkasten: Рост Знаний
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-6 rounded-2xl bg-white shadow-sm border border-gray-100 hover:border-violet-300 transition-all cursor-pointer group" onclick="toggleFlip(this)">
+                        <div class="group-hover:hidden">
+                            <span class="text-2xl">⚡️</span>
+                            <h4 class="font-bold mt-2">Мимолетные</h4>
+                            <p class="text-xs text-gray-500 mt-1">Inbox / Quick Capture</p>
+                        </div>
+                        <div class="hidden group-hover:block italic text-sm text-gray-700">
+                            "Записать идею, пока не забыл. Очистить через 24 часа."
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-2xl bg-white shadow-sm border border-gray-100 hover:border-violet-300 transition-all cursor-pointer group" onclick="toggleFlip(this)">
+                        <div class="group-hover:hidden">
+                            <span class="text-2xl">📚</span>
+                            <h4 class="font-bold mt-2">Литературные</h4>
+                            <p class="text-xs text-gray-500 mt-1">Конспекты источников</p>
+                        </div>
+                        <div class="hidden group-hover:block italic text-sm text-gray-700">
+                            "Мысли автора своими словами + ссылка на источник."
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-2xl bg-white shadow-sm border border-gray-100 hover:border-violet-300 transition-all cursor-pointer group" onclick="toggleFlip(this)">
+                        <div class="group-hover:hidden">
+                            <span class="text-2xl">🌲</span>
+                            <h4 class="font-bold mt-2">Вечнозеленые</h4>
+                            <p class="text-xs text-gray-500 mt-1">Ваш капитал знаний</p>
+                        </div>
+                        <div class="hidden group-hover:block italic text-sm text-gray-700">
+                            "Атомарные заметки. Одна мысль = одна заметка. Связаны между собой."
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PARA -->
+            <div class="space-y-6">
+                <h3 class="text-xl font-bold flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">02</span>
+                    PARA: Организация Файлов
+                </h3>
+                <div class="bg-gray-900 rounded-3xl p-8 text-white">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="space-y-2">
+                            <div class="text-3xl font-black text-red-500">P</div>
+                            <div class="text-sm font-bold uppercase tracking-widest">Projects</div>
+                            <div class="text-[10px] text-gray-400">Активные (Дедлайн)</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-3xl font-black text-orange-500">A</div>
+                            <div class="text-sm font-bold uppercase tracking-widest">Areas</div>
+                            <div class="text-[10px] text-gray-400">Ответственность</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-3xl font-black text-blue-500">R</div>
+                            <div class="text-sm font-bold uppercase tracking-widest">Resources</div>
+                            <div class="text-[10px] text-gray-400">Интересы</div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-3xl font-black text-gray-500">A</div>
+                            <div class="text-sm font-bold uppercase tracking-widest">Archives</div>
+                            <div class="text-[10px] text-gray-400">Завершенное</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ: DATAVIEW -->
+        <section id="sec-dataview" class="hidden space-y-8">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-bold mb-2">Плагин Dataview</h2>
+                <p class="text-gray-600">Превратите вашу базу знаний в реляционную базу данных с помощью простых запросов.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Редактор запроса -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                    <h4 class="font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Запрос (Query Builder)</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">ОТКУДА (FROM)</label>
+                            <select id="dv-from" onchange="runQuery()" class="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg text-sm">
+                                <option value="all">Все заметки</option>
+                                <option value="#book">Тег #book</option>
+                                <option value="#project">Тег #project</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">СОРТИРОВКА (SORT)</label>
+                            <select id="dv-sort" onchange="runQuery()" class="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg text-sm">
+                                <option value="name">По имени</option>
+                                <option value="rating">По рейтингу</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-gray-900 rounded-xl">
+                        <code class="code-font text-xs text-green-400">
+                            TABLE author, rating <br>
+                            FROM <span id="code-from">""</span> <br>
+                            SORT <span id="code-sort">file.name</span> ASC
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Результат -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 overflow-x-auto">
+                    <h4 class="font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Результат (Table View)</h4>
+                    <table class="w-full text-sm text-left">
+                        <thead>
+                            <tr class="text-gray-400 border-b border-gray-100">
+                                <th class="pb-2 font-medium">Файл</th>
+                                <th class="pb-2 font-medium">Автор</th>
+                                <th class="pb-2 font-medium">Рейтинг</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dv-results" class="divide-y divide-gray-50">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ: RAG -->
+        <section id="sec-rag" class="hidden space-y-8">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-bold mb-2">Будущее: RAG Агенты</h2>
+                <p class="text-gray-600">Retrieval-Augmented Generation позволяет ИИ отвечать на вопросы, основываясь исключительно на ваших личных заметках.</p>
+            </div>
+
+            <div class="glass-card p-8 rounded-3xl border border-violet-100">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                    <div class="flex-1 space-y-6">
+                        <div id="step-1" class="p-4 border-2 rounded-xl transition-all duration-300 step-active">
+                            <h5 class="font-bold text-sm">1. Векторизация</h5>
+                            <p class="text-xs text-gray-500">Ваши Markdown файлы разбиваются на "чанки" и превращаются в числа (эмбеддинги).</p>
+                        </div>
+                        <div id="step-2" class="p-4 border-2 rounded-xl transition-all duration-300 border-gray-100 opacity-50">
+                            <h5 class="font-bold text-sm">2. Семантический поиск</h5>
+                            <p class="text-xs text-gray-500">Когда вы задаете вопрос, ИИ ищет самые похожие по смыслу части ваших заметок.</p>
+                        </div>
+                        <div id="step-3" class="p-4 border-2 rounded-xl transition-all duration-300 border-gray-100 opacity-50">
+                            <h5 class="font-bold text-sm">3. Генерация ответа</h5>
+                            <p class="text-xs text-gray-500">LLM (ChatGPT/Claude) получает ваш вопрос + найденный контекст и выдает точный ответ.</p>
+                        </div>
+                    </div>
+
+                    <div class="w-full md:w-1/2 flex flex-col items-center justify-center p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-300 min-h-[300px]">
+                        <div id="rag-visual" class="text-center">
+                            <div class="text-5xl mb-4">🧠</div>
+                            <p class="text-sm font-medium text-gray-700 mb-4">Нажмите кнопку, чтобы запустить процесс</p>
+                            <button onclick="animateRAG()" id="rag-btn" class="px-8 py-3 bg-violet-600 text-white rounded-full font-bold shadow-lg hover:bg-violet-700 transition-all">Запустить Pipeline</button>
+                        </div>
+                        <div id="rag-status" class="hidden w-full space-y-2">
+                            <div class="flex justify-between text-[10px] font-bold text-violet-600">
+                                <span id="status-label">Обработка...</span>
+                                <span id="status-pct">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                                <div id="status-bar" class="bg-violet-600 h-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p id="rag-log" class="text-[10px] text-gray-400 font-mono mt-2 text-center">Инициализация векторизатора...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Футер -->
+    <footer class="bg-white border-t border-gray-200 py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-500 text-sm">Создано для демонстрации возможностей Obsidian & RAG систем.</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">#Obsidian</span>
+                <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">#PKM</span>
+                <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">#SecondBrain</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- ДАННЫЕ ПРИЛОЖЕНИЯ ---
+        const MOCK_DATA = [
+            { name: "Атомные Привычки", author: "Дж. Клир", rating: 5, tags: ["#book"] },
+            { name: "Deep Work", author: "К. Ньюпорт", rating: 4, tags: ["#book"] },
+            { name: "Релиз Проекта X", author: "Я", rating: 5, tags: ["#project"] },
+            { name: "Обзор Obsidian", author: "Блог", rating: 3, tags: ["#project"] },
+            { name: "Психология Влияния", author: "Р. Чалдини", rating: 4, tags: ["#book"] }
+        ];
+
+        // --- РОУТИНГ ---
+        function showSection(id) {
+            const sections = ['home', 'method', 'dataview', 'rag'];
+            sections.forEach(s => {
+                document.getElementById(`sec-${s}`).classList.add('hidden');
+                document.getElementById(`btn-${s}`).classList.remove('active');
+            });
+            document.getElementById(`sec-${id}`).classList.remove('hidden');
+            document.getElementById(`btn-${id}`).classList.add('active');
+
+            if (id === 'home') initGraph();
+            if (id === 'dataview') runQuery();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // --- ГРАФ (CHART.JS) ---
+        let graphChart = null;
+        function initGraph() {
+            const ctx = document.getElementById('graphCanvas').getContext('2d');
+            if (graphChart) return;
+
+            const nodes = Array.from({ length: 40 }, () => ({
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                r: Math.random() * 6 + 2
+            }));
+
+            graphChart = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Заметки',
+                        data: nodes,
+                        backgroundColor: 'rgba(124, 58, 237, 0.5)',
+                        borderColor: '#7c3aed',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false, min: 0, max: 100 },
+                        y: { display: false, min: 0, max: 100 }
+                    },
+                    animation: { duration: 2000 }
+                }
+            });
+        }
+
+        function randomizeGraph() {
+            if (!graphChart) return;
+            graphChart.data.datasets[0].data = graphChart.data.datasets[0].data.map(d => ({
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                r: Math.random() * 8 + 2
+            }));
+            graphChart.update();
+        }
+
+        // --- DATAVIEW SIMULATOR ---
+        function runQuery() {
+            const from = document.getElementById('dv-from').value;
+            const sort = document.getElementById('dv-sort').value;
+            
+            document.getElementById('code-from').innerText = from === 'all' ? '""' : `"${from}"`;
+            document.getElementById('code-sort').innerText = `file.${sort}`;
+
+            let filtered = MOCK_DATA;
+            if (from !== 'all') {
+                filtered = MOCK_DATA.filter(d => d.tags.includes(from));
+            }
+
+            filtered.sort((a, b) => {
+                if (sort === 'name') return a.name.localeCompare(b.name);
+                return b.rating - a.rating;
+            });
+
+            const tbody = document.getElementById('dv-results');
+            tbody.innerHTML = filtered.map(item => `
+                <tr class="hover:bg-violet-50 transition-colors">
+                    <td class="py-3 font-semibold text-violet-700">[[${item.name}]]</td>
+                    <td class="py-3 text-gray-600">${item.author}</td>
+                    <td class="py-3">${'⭐'.repeat(item.rating)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // --- RAG ANIMATION ---
+        function animateRAG() {
+            const btn = document.getElementById('rag-btn');
+            const visual = document.getElementById('rag-visual');
+            const status = document.getElementById('rag-status');
+            const bar = document.getElementById('status-bar');
+            const pct = document.getElementById('status-pct');
+            const log = document.getElementById('rag-log');
+            const label = document.getElementById('status-label');
+
+            btn.classList.add('hidden');
+            visual.classList.add('hidden');
+            status.classList.remove('hidden');
+
+            const steps = [
+                { p: 30, l: "Векторизация Markdown: 1,535 файлов...", s: 1 },
+                { p: 65, l: "Поиск семантических соответствий...", s: 2 },
+                { p: 100, l: "Генерация ответа через LLM ассистента.", s: 3 }
+            ];
+
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i >= steps.length) {
+                    clearInterval(interval);
+                    label.innerText = "Готово!";
+                    log.innerText = "Агент готов к работе.";
+                    return;
+                }
+
+                const curr = steps[i];
+                bar.style.width = curr.p + '%';
+                pct.innerText = curr.p + '%';
+                log.innerText = curr.l;
+
+                // Подсветка шагов слева
+                [1, 2, 3].forEach(num => {
+                    const el = document.getElementById(`step-${num}`);
+                    el.classList.remove('step-active', 'pulse-purple');
+                    el.classList.add('opacity-50');
+                });
+                const activeStep = document.getElementById(`step-${curr.s}`);
+                activeStep.classList.remove('opacity-50');
+                activeStep.classList.add('step-active', 'pulse-purple');
+
+                i++;
+            }, 1500);
+        }
+
+        function toggleFlip(el) {
+            // Визуальный эффект переворота (простая смена контента)
+            const children = el.children;
+            children[0].classList.toggle('hidden');
+            children[1].classList.toggle('hidden');
+        }
+
+        // Инициализация
+        window.onload = () => {
+            initGraph();
+        };
+    </script>
+</body>
+</html>
